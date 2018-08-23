@@ -1,59 +1,99 @@
-# Discord Scripts
+# discord.py
 
-[![Python 3.5](https://img.shields.io/badge/Python-3.5-blue.svg)](https://www.python.org/download/releases/3.0/)
-[![GitHub license](https://img.shields.io/github/license/haccer/discord-scripts.svg)](https://github.com/haccer/discord-scripts/blob/master/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/discord.py.svg)](https://pypi.python.org/pypi/discord.py/)
+[![PyPI](https://img.shields.io/pypi/pyversions/discord.py.svg)](https://pypi.python.org/pypi/discord.py/)
 
-A collection of Discord scripts I made a while ago for other people. 
-Replace the "your_token_goes_here" with your Discord token. A short tutorial to get your Discord token is located [here](https://github.com/TheRacingLion/Discord-SelfBot/wiki/Discord-Token-Tutorial).
+discord.py is an API wrapper for Discord written in Python.
+
+This was written to allow easier writing of bots or chat logs. Make sure to familiarise yourself with the API using the [documentation][doc].
+
+[doc]: http://discordpy.rtfd.org/en/latest
+
+### Breaking Changes
+
+The discord API is constantly changing and the wrapper API is as well. There will be no effort to keep backwards compatibility in versions before `v1.0.0`.
+
+I recommend joining either the [official discord.py server][guild] or the [Discord API server][ch] for help and discussion about the library.
+
+[guild]: https://discord.gg/r3sSKJJ
+[ch]: https://discord.gg/discord-api
+
+## Installing
+
+To install the library without full voice support, you can just run the following command:
+
+```
+python3 -m pip install -U discord.py
+```
+
+Otherwise to get voice support you should run the following command:
+
+```
+python3 -m pip install -U discord.py[voice]
+```
+
+To install the development version, do the following:
+
+```
+python3 -m pip install -U https://github.com/Rapptz/discord.py/archive/master.zip#egg=discord.py[voice]
+```
+
+or the more long winded from cloned source:
+
+```
+$ git clone https://github.com/Rapptz/discord.py
+$ cd discord.py
+$ python3 -m pip install -U .[voice]
+```
+
+Please note that on Linux installing voice you must install the following packages via your favourite package manager (e.g. `apt`, `yum`, etc) before running the above command:
+
+- libffi-dev (or `libffi-devel` on some systems)
+- python<version>-dev (e.g. `python3.5-dev` for Python 3.5)
+
+## Quick Example
+
+```py
+import discord
+import asyncio
+
+client = discord.Client()
+
+@client.event
+async def on_ready():
+    print('Logged in as')
+    print(client.user.name)
+    print(client.user.id)
+    print('------')
+
+@client.event
+async def on_message(message):
+    if message.content.startswith('!test'):
+        counter = 0
+        tmp = await client.send_message(message.channel, 'Calculating messages...')
+        async for log in client.logs_from(message.channel, limit=100):
+            if log.author == message.author:
+                counter += 1
+
+        await client.edit_message(tmp, 'You have {} messages.'.format(counter))
+    elif message.content.startswith('!sleep'):
+        await asyncio.sleep(5)
+        await client.send_message(message.channel, 'Done sleeping')
+
+client.run('token')
+```
+
+Note that in Python 3.4 you use `@asyncio.coroutine` instead of `async def` and `yield from` instead of `await`.
+
+You can find examples in the examples directory.
 
 ## Requirements
 
-- Python 3.5
-- `pip3 install -r requirements.txt`
+- Python 3.4.2+
+- `aiohttp` library
+- `websockets` library
+- `PyNaCl` library (optional, for voice only)
+    - On Linux systems this requires the `libffi` library. You can install in
+      debian based systems by doing `sudo apt-get install libffi-dev`.
 
-## del.py
-
-A delete script to mass delete your messages from a channel. 
-
-### Usage
-
-You can delete a specific number of messages by entering `.del number`, or you can delete every message by just entering `.del` in the channel.
-
-Example: `.del 50` will delete last 50 messages in the channel.
-
-## log_discord.py
-
-A proof-of-concept script to log Discord chatrooms. This can relay logged messages to a private Discord channel and/or save them to a text file. This is very useful for spying on people.
-
-### Usage & Configuration
-
-Instructions on how to configure this for your needs are annotated in the script: 
-
-```python
-@c.event
-async def on_message(message):
-    # Replace '412905214533838722' with the Discord channel ID you want to log.
-    if message.channel.id == "412905214533838722":
-        await log_discord(message, "replace with relay channel id", "name_of_file.txt")
-```
-
-Copy this _if_ statement for each channel you want to log, replacing the default values with your own.
-
-#### Example Logging Multiple Channels
-
-```python
-@c.event
-async def on_message(message):
-    if message.channel.id == "452307014715179022":
-        await log_discord(message, "452307600785276933", "log_452307014715179022.txt")
-    if message.channel.id == "532307014715171337":
-        await log_discord(message, "265407600785277777", "log_532307014715171337.txt")
-```
-
-## collect.py
-
-A script that will collect and save the last ~11k messages from a channel.
-
-### Usage
-
-Same usage as del.py -- the scrape is triggered by `.del` to let the users who see it think you are just deleting your messages.
+Usually `pip` will handle these for you.
